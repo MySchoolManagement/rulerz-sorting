@@ -44,6 +44,10 @@ abstract class AbstractSortingSpecification extends AbstractSpecification
      */
     protected function alias(string $property): string
     {
-        return parent::alias($property).' = ?';
+        if ($this->alias) {
+            $property = implode('.', [$this->alias, $property]);
+        }
+
+        return $property.' = ?';
     }
 }
