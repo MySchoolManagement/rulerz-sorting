@@ -7,7 +7,6 @@
       "email": "sebastien.lemarinel@msm.io"
     }
   ],
-  "version": "master",
   "type": "library",
   "license": "proprietary",
   "require": {
