@@ -27,8 +27,6 @@ abstract class AbstractSortingSpecification extends AbstractSpecification
     {
         $this->direction = $direction;
         $this->alias = $alias;
-
-        parent::__construct($alias);
     }
 
     /**
