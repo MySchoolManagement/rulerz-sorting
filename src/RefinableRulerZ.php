@@ -75,7 +75,7 @@ class RefinableRulerZ
                 }
 
                 if (is_array($result) === true) {
-                    $result = array_slice($result, $offset ?? 0, min($limit ?? count($result), 100));
+                    $result = array_slice($result, $offset ?? 0, $limit ?? count($result));
                 } elseif ($result instanceof Collection) {
                     $result = $result->slice($offset ?? 0, $limit ?? $result->count());
                 } else {
