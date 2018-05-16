@@ -39,6 +39,18 @@ class RefinableRulerZ
         return $result;
     }
 
+    public function refineSpecOne($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null)
+    {
+        $result = $this->refineSpec($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit);
+        $result = iterator_to_array($result);
+
+        if (count($result) > 0) {
+            return $result[0];
+        }
+
+        return null;
+    }
+
     public function applyRefineSpec($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null)
     {
         $result = $target;
