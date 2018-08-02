@@ -31,7 +31,7 @@ trait SortTrait
 
         // FIXME: we hack around to make sorting work within the rules engine. instead of modifying the grammar we do some
         // manipulation
-        $dql = str_replace(['=', '(', ')'], '', $dql);
+        $dql = str_replace(['='], '', $dql);
         $dql = str_replace(
             array_map(function ($e) { return '?'.$e; }, array_keys($parameters)),
             array_map(function ($e) { return $e === SortDirection::ASCENDING ? 'ASC' : 'DESC'; }, array_values($parameters)),
@@ -39,8 +39,12 @@ trait SortTrait
         );
 
         foreach (explode('AND', $dql) as $order) {
-            $parts = explode(' ', trim($order));
-            $target->addOrderBy($parts[0], $parts[count($parts) - 1]);
+            $order = trim($order);
+            $orderWhitespace = strrpos($order, ' ');
+            $orderBy = substr($order, 0, $orderWhitespace - 1);
+            $orderDirection = substr($order, $orderWhitespace + 1);
+
+            $target->addOrderBy($orderBy, $orderDirection);
         }
 
         return $target;

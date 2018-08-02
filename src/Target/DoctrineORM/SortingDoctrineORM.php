@@ -8,6 +8,8 @@ use Doctrine\ORM\QueryBuilder;
 use RulerZ\Compiler\Context;
 use RulerZ\Target\AbstractSqlTarget;
 use RulerZ\Target\DoctrineORM\DoctrineORMVisitor;
+use RulerZ\Target\Operators\Definitions;
+use RulerZ\Target\Operators\OperatorTools;
 
 class SortingDoctrineORM extends AbstractSqlTarget
 {
@@ -28,6 +30,23 @@ class SortingDoctrineORM extends AbstractSqlTarget
             '\RulerZ\Sorting\Executor\DoctrineORM\SortTrait',
             '\RulerZ\Sorting\Executor\Polyfill\SortBasedSatisfaction',
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOperators()
+    {
+        $operators = parent::getOperators();
+        $operators = $operators->mergeWith(
+            new Definitions([], [
+                'and' => function ($a, $b) {
+                    return sprintf('%s', OperatorTools::inlineMixedInstructions([$a, $b], 'AND'));
+                }
+            ])
+        );
+
+        return $operators;
     }
 
     /**
