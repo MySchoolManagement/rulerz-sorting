@@ -37,7 +37,7 @@ class Composite implements Specification
     /**
      * {@inheritdoc}
      */
-    public function getRule()
+    public function getRule(): string
     {
         return implode(sprintf('%s ', $this->operator), array_map(function (Specification $specification) {
             return $specification->getRule();
@@ -47,7 +47,7 @@ class Composite implements Specification
     /**
      * {@inheritdoc}
      */
-    public function getParameters()
+    public function getParameters(): array
     {
         $parametersCount = 0;
 

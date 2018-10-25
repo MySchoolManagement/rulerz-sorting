@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace RulerZ\Sorting\Target\Native;
 
 use Hoa\Ruler\Model as AST;
+use RulerZ\Exception\OperatorNotFoundException;
 use RulerZ\Target\GenericVisitor;
 use RulerZ\Model;
 
@@ -16,43 +17,46 @@ class NativeVisitor extends GenericVisitor
     public function visitAccess(AST\Bag\Context $element, &$handle = null, $eldnah = null)
     {
         $flattenedArrayDimensions = [
-            sprintf('["%s"]', $element->getId()),
-        ];
-
-        $flattedObjectDimensions = [
-            sprintf('get%s()', ucwords($element->getId())),
+            sprintf('"%s"', $element->getId()),
         ];
 
         foreach ($element->getDimensions() as $dimension) {
-            $flattenedArrayDimensions[] = sprintf('["%s"]', $dimension[AST\Bag\Context::ACCESS_VALUE]);
-            $flattedObjectDimensions[] = sprintf('get%s()', ucwords($dimension[AST\Bag\Context::ACCESS_VALUE]));
+            $flattenedArrayDimensions[] = sprintf('"%s"', $dimension[AST\Bag\Context::ACCESS_VALUE]);
         }
 
-        $arrayDimensions = implode('', $flattenedArrayDimensions);
-        $objectDimensions = implode('->', $flattedObjectDimensions);
+        return sprintf('[%s]', implode(', ', $flattenedArrayDimensions));
+    }
 
-        // only supports arrays of arrays or arrays of objects (who's dimensions are also objects)
-        return sprintf('function() use ($target, $parameters) {
-            usort($target, function($a, $b) use ($parameters) {
-                if (is_object($a)) {
-                    $valA = $a->%s;
-                    $valB = $b->%s;
-                } else {
-                    $valA = $a%s;
-                    $valB = $b%s;
-                }
+    /**
+     * {@inheritdoc}
+     */
+    public function visitOperator(AST\Operator $element, &$handle = null, $eldnah = null)
+    {
+        $operatorName = $element->getName();
 
-                if ((true === is_numeric($valA)) || (true === is_numeric($valB))) {
-                    $result = ($valA > $valB) ? 1 : -1;
-                } else {
-                    $result = strcmp($valA, $valB);
-                }
+        // the operator does not exist at all, throw an error before doing anything else.
+        if (!$this->operators->hasInlineOperator($operatorName) && !$this->operators->hasOperator($operatorName)) {
+            throw new OperatorNotFoundException($operatorName, sprintf('Operator "%s" does not exist.', $operatorName));
+        }
 
-                return ($parameters[0] == \RulerZ\Sorting\SortDirection::ASCENDING) ? $result : -$result;
-            });
+        // expand the arguments
+        $arguments = array_map(function ($argument) use (&$handle, $eldnah) {
+            return $argument->accept($this, $handle, $eldnah);
+        }, $element->getArguments());
 
-            return $target;
-        }', $objectDimensions, $objectDimensions, $arrayDimensions, $arrayDimensions);
+        $arguments[] = '$this';
+
+        // and either inline the operator call
+        if ($this->operators->hasInlineOperator($operatorName)) {
+            $callable = $this->operators->getInlineOperator($operatorName);
+
+            return new NativeCompileTimeOperator(
+                call_user_func_array($callable, $arguments)
+            );
+        }
+
+        // or defer it.
+        return new NativeRuntimeOperator(sprintf('$operators["%s"]', $operatorName), $arguments);
     }
 
     public function visitParameter(Model\Parameter $element, &$handle = null, $eldnah = null)

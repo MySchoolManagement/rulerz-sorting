@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace RulerZ\Sorting;
 
+use RulerZ\Sorting\Compiler\Compiler;
 use RulerZ\Sorting\Compiler\SortingCompilationTarget;
-use RulerZ\Compiler\Compiler;
 use RulerZ\Compiler\CompilationTarget;
 use RulerZ\Context\ExecutionContext;
 use RulerZ\Exception\TargetUnsupportedException;
@@ -13,6 +13,11 @@ use RulerZ\Spec\Specification;
 
 class SortingRulerZ
 {
+    /**
+     * @var Compiler
+     */
+    private $compiler;
+
     /**
      * @var array<CompilationTarget>
      */

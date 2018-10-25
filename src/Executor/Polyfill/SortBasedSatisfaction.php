@@ -16,7 +16,7 @@ trait SortBasedSatisfaction
     /**
      * {@inheritdoc}
      */
-    public function satisfies($target, array $parameters, array $operators, ExecutionContext $context)
+    public function satisfies($target, array $parameters, array $operators, ExecutionContext $context): bool
     {
         return count($this->sort($target, $parameters, $operators, $context)) !== 0;
     }

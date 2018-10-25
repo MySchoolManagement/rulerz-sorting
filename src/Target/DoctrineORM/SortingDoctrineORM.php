@@ -16,7 +16,7 @@ class SortingDoctrineORM extends AbstractSqlTarget
     /**
      * {@inheritdoc}
      */
-    public function supports($target, $mode)
+    public function supports($target, $mode): bool
     {
         return $target instanceof QueryBuilder;
     }
@@ -33,9 +33,9 @@ class SortingDoctrineORM extends AbstractSqlTarget
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
-    public function getOperators()
+    public function getOperators(): Definitions
     {
         $operators = parent::getOperators();
         $operators = $operators->mergeWith(
@@ -52,7 +52,7 @@ class SortingDoctrineORM extends AbstractSqlTarget
     /**
      * {@inheritdoc}
      */
-    public function createCompilationContext($target)
+    public function createCompilationContext($target): Context
     {
         /* @var \Doctrine\ORM\QueryBuilder $target */
 

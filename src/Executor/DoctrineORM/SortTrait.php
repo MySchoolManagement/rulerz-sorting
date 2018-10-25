@@ -24,7 +24,7 @@ trait SortTrait
         }
 
         // this will return DQL code
-        $dql = $this->execute($target, $operators, $parameters);
+        $dql = $this->execute($target, $operators, $parameters)[0];
 
         // the root alias can not be determined at compile-time so placeholders are left in the DQL
         $dql = str_replace('@@_ROOT_ALIAS_@@', $target->getRootAliases()[0], $dql);
