@@ -11,9 +11,9 @@
   "license": "proprietary",
   "require": {
     "doctrine/collections": "^v1.3.0",
-    "doctrine/orm": "^v2.5",
-    "kphoen/rulerz": "^0.20.3",
-    "ramsey/uuid": "^3.3"
+    "doctrine/orm": "^v2.7",
+    "kphoen/rulerz": "^1.0.0",
+    "ramsey/uuid": "^3.9"
   },
   "autoload": {
     "psr-4": {
