@@ -7,6 +7,7 @@ namespace RulerZ\Sorting\Executor\DoctrineORM;
 use RulerZ\Sorting\SortDirection;
 use RulerZ\Context\ExecutionContext;
 use RulerZ\Result\IteratorTools;
+use Ursula\EntityFramework\Bundle\Doctrine\QueryBuilderHelper;
 
 trait SortTrait
 {
@@ -18,9 +19,8 @@ trait SortTrait
     public function applySort($target, array $parameters, array $operators, ExecutionContext $context)
     {
         /* @var \Doctrine\ORM\QueryBuilder $target */
-        /* @var \Doctrine\ORM\QueryBuilder $target */
         foreach ($this->detectedJoins as $join) {
-            $target->leftJoin(sprintf('%s.%s', $join['root'], $join['column']), $join['as']);
+            QueryBuilderHelper::leftJoinUnique($target, sprintf('%s.%s', $join['root'], $join['column']), $join['as']);
         }
 
         // this will return DQL code
