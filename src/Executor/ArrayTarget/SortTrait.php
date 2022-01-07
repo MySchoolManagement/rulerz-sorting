@@ -6,6 +6,7 @@ namespace RulerZ\Sorting\Executor\ArrayTarget;
 
 use RulerZ\Context\ExecutionContext;
 use RulerZ\Context\ObjectContext;
+use RulerZ\Executor\Executor;
 use RulerZ\Result\IteratorTools;
 use RulerZ\Sorting\Target\Native\SortOperatorDefinition;
 
@@ -41,10 +42,18 @@ trait SortTrait
 
                 if ($sortingFields[$i] instanceof SortOperatorDefinition) {
                     $operator = $sortingFields[$i]->getOperator();
+                    $operatorValuesA = [];
+                    $operatorValuesB = [];
 
-                    $operatorValuesA = $this->getValue($a, $sortingFields[$i]->getProperties());
-                    $operatorValuesB = $this->getValue($b, $sortingFields[$i]->getProperties());
-                    
+                    foreach ($sortingFields[$i]->getProperties() as $defProps) {
+                        if ($defProps instanceof Executor) {
+                            continue;
+                        }
+
+                        $operatorValuesA[] = $this->getValue($a, $defProps);
+                        $operatorValuesB[] = $this->getValue($b, $defProps);
+                    }
+
                     $aVal = call_user_func($operator, $operatorValuesA);
                     $bVal = call_user_func($operator, $operatorValuesB);
                 } else {
@@ -95,7 +104,7 @@ trait SortTrait
         $val = $target;
 
         for ($i = 0; $i < count($propertyList); $i++) {
-            if (is_array($val->getObject())) {
+            if (is_array($val instanceof ObjectContext ? $val->getObject() : $val)) {
                 $property = sprintf('[%s]', $propertyList[$i]);
             } else {
                 $property = $propertyList[$i];
