@@ -7,7 +7,6 @@ namespace RulerZ\Sorting\Executor\DoctrineORM;
 use RulerZ\Sorting\SortDirection;
 use RulerZ\Context\ExecutionContext;
 use RulerZ\Result\IteratorTools;
-use Ursula\EntityFramework\Bundle\Doctrine\QueryBuilderHelper;
 
 trait SortTrait
 {
@@ -20,7 +19,7 @@ trait SortTrait
     {
         /* @var \Doctrine\ORM\QueryBuilder $target */
         foreach ($this->detectedJoins as $join) {
-            QueryBuilderHelper::leftJoinUnique($target, sprintf('%s.%s', $join['root'], $join['column']), $join['as']);
+            $this->leftJoinUnique($target, sprintf('%s.%s', $join['root'], $join['column']), $join['as']);
         }
 
         // this will return DQL code
@@ -87,4 +86,31 @@ trait SortTrait
     {
         throw new \LogicException('Not supported.');
     }
+
+    private function leftJoinUnique(QueryBuilder $queryBuilder, string $join, string $alias, ?string $conditionType = null, ?string $condition = null, ?string $indexBy = null): QueryBuilder
+    {
+        if (! $this->joinExists($queryBuilder, Join::LEFT_JOIN, $join, $alias, $conditionType, $condition, $indexBy)) {
+            $queryBuilder->leftJoin($join, $alias, $conditionType, $condition, $indexBy);
+        }
+
+        return $queryBuilder;
+    }
+
+    private function joinExists(QueryBuilder $queryBuilder, string $joinType, string $join, string $alias, ?string $conditionType = null, ?string $condition = null, ?string $indexBy = null): bool
+    {
+        $existingJoins = $queryBuilder->getDQLPart('join');
+        $newJoinAsString = (string) (new Join($joinType, $join, $alias, $conditionType, $condition, $indexBy));
+
+        foreach ($existingJoins as $joins) {
+            /** @var Join $join */
+            foreach ($joins as $join) {
+                if ((string) $join === $newJoinAsString) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 }
