@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace RulerZ\Sorting\Executor\DoctrineORM;
 
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 use RulerZ\Sorting\SortDirection;
 use RulerZ\Context\ExecutionContext;
 use RulerZ\Result\IteratorTools;
-use Ursula\EntityFramework\Bundle\Doctrine\QueryBuilderHelper;
 
 trait SortTrait
 {
@@ -20,7 +21,7 @@ trait SortTrait
     {
         /* @var \Doctrine\ORM\QueryBuilder $target */
         foreach ($this->detectedJoins as $join) {
-            QueryBuilderHelper::leftJoinUnique($target, sprintf('%s.%s', $join['root'], $join['column']), $join['as']);
+            static::leftJoinUnique($target, sprintf('%s.%s', $join['root'], $join['column']), $join['as']);
         }
 
         // this will return DQL code
@@ -87,4 +88,14 @@ trait SortTrait
     {
         throw new \LogicException('Not supported.');
     }
+
+    private static function leftJoinUnique(QueryBuilder $queryBuilder, string $join, string $alias, ?string $conditionType = null, ?string $condition = null, ?string $indexBy = null): QueryBuilder
+    {
+        if (! self::joinExists($queryBuilder, Join::LEFT_JOIN, $join, $alias, $conditionType, $condition, $indexBy)) {
+            $queryBuilder->leftJoin($join, $alias, $conditionType, $condition, $indexBy);
+        }
+
+        return $queryBuilder;
+    }
+
 }
