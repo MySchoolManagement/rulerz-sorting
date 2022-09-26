@@ -98,4 +98,20 @@ trait SortTrait
         return $queryBuilder;
     }
 
+    private static function joinExists(QueryBuilder $queryBuilder, string $joinType, string $join, string $alias, ?string $conditionType = null, ?string $condition = null, ?string $indexBy = null): bool
+    {
+        $existingJoins = $queryBuilder->getDQLPart('join');
+        $newJoinAsString = (string) (new Join($joinType, $join, $alias, $conditionType, $condition, $indexBy));
+
+        foreach ($existingJoins as $joins) {
+            /** @var Join $join */
+            foreach ($joins as $join) {
+                if ((string) $join === $newJoinAsString) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
