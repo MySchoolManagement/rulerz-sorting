@@ -71,4 +71,20 @@ class SortingDoctrineORM extends AbstractSqlTarget
     {
         return new DoctrineORMVisitor($context, $this->getOperators(), $this->allowStarOperator);
     }
+
+    public function getRuleIdentifierHint(string $rule, Context $context): string
+    {
+        $aliases = implode('', $context['root_aliases']);
+        $entities = implode('', $context['root_entities']);
+        $joined = '';
+
+        /** @var Expr\Join[] $joins */
+        foreach ($context['joins'] as $rootEntity => $joins) {
+            foreach ($joins as $join) {
+                $joined .= $join->getAlias().$join->getJoin();
+            }
+        }
+
+        return $aliases.$entities.$joined;
+    }
 }
