@@ -40,9 +40,9 @@ class RefinableRulerZ
         $this->filterTemplateOptimizer = new FilterTemplateOptimizer($rulerZ);
     }
 
-    public function refineSpec($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null)
+    public function refineSpec($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null, bool $hasApplyAlreadyExecuted = false)
     {
-        $optimizerResult = $this->doApplyRefineSpec($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit, true);
+        $optimizerResult = $target instanceof FilterTemplateOptimizer_State ? $target : $this->doApplyRefineSpec($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit, true);
         $target = $optimizerResult->getTarget();
 
         if ($target instanceof QueryBuilder) {
@@ -57,7 +57,7 @@ class RefinableRulerZ
             }
 
             $finalizeResult = $this->filterTemplateOptimizer->finalize($optimizerResult, null);
-            $query = $this->filterTemplateOptimizer->produceQuery($finalizeResult, $limit, $offset);
+            $query = $this->filterTemplateOptimizer->produceQuery($finalizeResult, $limit ?? $target->getMaxResults(), $offset ?? $target->getFirstResult());
 
             return IteratorTools::fromArray($query->getResult());
         }
@@ -79,9 +79,14 @@ class RefinableRulerZ
 
     public function applyRefineSpec($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null)
     {
+        return $this->applyRefineSpecReturnOptimizerResult($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit)->getTarget();
+    }
+
+    public function applyRefineSpecReturnOptimizerResult($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null)
+    {
         $optimizerResult = $this->doApplyRefineSpec($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit, false);
 
-        return $optimizerResult->getTarget();
+        return $optimizerResult;
     }
 
     public function count($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null): int
