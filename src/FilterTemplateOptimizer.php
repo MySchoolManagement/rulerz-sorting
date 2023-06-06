@@ -255,7 +255,7 @@ final class FilterTemplateOptimizer
             $parts = filter([
                 'ORDER BY' => ! empty($orderBy) ? sprintf(' %s', join(',', $orderBy)) : null,
                 'LIMIT' => $limit,
-                'OFFSET' => $offset,
+                'OFFSET' => $limit === null ? null : $offset,
             ], function ($value) {
                 return null !== $value;
             });
