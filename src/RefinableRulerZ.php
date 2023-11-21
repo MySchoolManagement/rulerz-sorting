@@ -42,6 +42,10 @@ class RefinableRulerZ
 
     public function refineSpec($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null, bool $hasApplyAlreadyExecuted = false)
     {
+        if ($target instanceof FilterTemplateOptimizer_State && ($filterSpec !== null || $sortSpec !== $sortSpec)) {
+            throw new DomainException('$target has already been optimized and $filterSpec or $sortSpec');
+        }
+
         $optimizerResult = $target instanceof FilterTemplateOptimizer_State ? $target : $this->doApplyRefineSpec($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit, true);
         $target = $optimizerResult->getTarget();
 
