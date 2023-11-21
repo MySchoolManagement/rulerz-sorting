@@ -55,7 +55,7 @@ class RefinableRulerZ
 
             if ($optimizerResult->canBeOptimized()) {
                 $target
-                    ->setFirstResult(0)
+                    ->setFirstResult(null)
                     ->setMaxResults(null)
                 ;
             }
