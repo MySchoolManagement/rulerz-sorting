@@ -28,6 +28,7 @@ trait SortTrait
     public function sort($target, array $parameters, array $operators, ExecutionContext $context)
     {
         $sortingFields = $this->execute($target, $operators, $parameters);
+        $target = is_array($target) ? $target : iterator_to_array($target);
 
         usort($target, function ($a, $b) use ($sortingFields, $parameters) {
             $t = [true => -1, false => 1];
