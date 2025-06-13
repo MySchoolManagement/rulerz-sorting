@@ -60,6 +60,14 @@ trait SortTrait
                     $aVal = $this->getValue($a, $sortingFields[$i]);
                     $bVal = $this->getValue($b, $sortingFields[$i]);
                 }
+
+                if($aVal instanceof ObjectContext) {
+                    $aVal = $aVal->getObject();
+                }
+
+                if($bVal instanceof ObjectContext) {
+                    $bVal = $bVal->getObject();
+                }
                 
                 $r = $aVal < $bVal;
 
