@@ -6,7 +6,9 @@ namespace RulerZ\Sorting;
 
 use Countable;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\NativeQuery;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Select;
 use Doctrine\ORM\QueryBuilder;
 use DomainException;
@@ -40,7 +42,7 @@ class RefinableRulerZ
         $this->filterTemplateOptimizer = new FilterTemplateOptimizer($rulerZ);
     }
 
-    public function refineSpec($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null, bool $hasApplyAlreadyExecuted = false)
+    public function refineSpec($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null, bool $hasApplyAlreadyExecuted = false, int $lockMode = LockMode::NONE)
     {
         if ($target instanceof FilterTemplateOptimizer_State && ($filterSpec !== null || $sortSpec !== $sortSpec)) {
             throw new DomainException('$target has already been optimized and $filterSpec or $sortSpec');
@@ -63,15 +65,28 @@ class RefinableRulerZ
             $finalizeResult = $this->filterTemplateOptimizer->finalize($optimizerResult, null);
             $query = $this->filterTemplateOptimizer->produceQuery($finalizeResult, $limit ?? $target->getMaxResults(), $offset ?? $target->getFirstResult());
 
+            if (LockMode::NONE !== $lockMode) {
+                if ($query instanceof Query) {
+                    $query->setLockMode($lockMode);
+                    $query->setHint(Query::HINT_REFRESH, true);
+                } else {
+                    throw new \LogicException('$lockMode is not supported for this query type');
+                }
+            }
+
             return IteratorTools::fromArray($query->getResult());
+        } else {
+            if (LockMode::NONE !== $lockMode) {
+                throw new \LogicException('$lockMode is not supported for this query type');
+            }
         }
 
         return $target;
     }
 
-    public function refineSpecOne($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null)
+    public function refineSpecOne($target, Specification $filterSpec = null, Specification $sortSpec = null, array $executionContext = [], $offset = null, $limit = null, int $lockMode = LockMode::NONE)
     {
-        $result = $this->refineSpec($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit);
+        $result = $this->refineSpec($target, $filterSpec, $sortSpec, $executionContext, $offset, $limit, lockMode: $lockMode);
         $result = iterator_to_array($result);
 
         if (count($result) > 0) {
