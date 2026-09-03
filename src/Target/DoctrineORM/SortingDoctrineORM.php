@@ -69,7 +69,7 @@ class SortingDoctrineORM extends AbstractSqlTarget
      */
     protected function createVisitor(Context $context)
     {
-        return new DoctrineORMVisitor($context, $this->getOperators(), $this->allowStarOperator);
+        return new DoctrineORMVisitor($this->eventDispatcher, $context, $this->getOperators(), $this->allowStarOperator);
     }
 
     public function getRuleIdentifierHint(string $rule, Context $context): string
